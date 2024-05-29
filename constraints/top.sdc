@@ -1,4 +1,5 @@
-create_clock -period "50.0 MHz" [get_ports clk]
+create_clock -name clk_50mhz -period 20ns [get_ports clk]
+create_clock -name clk_200mhz -period 5ns [get_ports clk]
 
 derive_clock_uncertainty
 

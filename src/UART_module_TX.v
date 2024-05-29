@@ -10,11 +10,10 @@ module UART_module_TX
 	input  [7 : 0]  send_byte,
 	input           send_en,
 	
-	output          tx_uart,
-	output [9 : 0]  send_byte_wire
+	output          tx_uart
 );
 
-localparam BIT_DURATION       = INPUT_CLK/BAUD_RATE;
+localparam BIT_DURATION        = INPUT_CLK/BAUD_RATE;
 localparam INTERVAL_CNTR_WIDTH = $clog2(BIT_DURATION);	
 
 reg          enb_delay;
@@ -25,8 +24,6 @@ wire         interval_cntr_done;
 
 reg          start;
 reg  [9 : 0] send_byte_reg = 10'b1;
-
-assign send_byte_wire = send_byte_reg;
 
 reg  [ INTERVAL_CNTR_WIDTH : 0] interval_cntr;
 reg  [ 3                   : 0] bit_cntr;
