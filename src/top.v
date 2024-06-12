@@ -39,6 +39,14 @@ module top
 	 wire send_tx_uart;
     
     //------------------------------------------------------------------------
+	 pll300mhz i_pll300mhz 
+	 ( 
+	     .inclk0 ( clk               ),
+		  .areset ( reset             ),
+		 
+		  .c0     ( clk_300mhz        ),
+		  .locked ( pll_300mhz_locked ) 
+	 ); 
 	 
 	 sync_and_debounce_one # (. depth ( 10 )) sync_counter_en 
 	 (
@@ -62,7 +70,7 @@ module top
 	     .clk    ( clk         ),
 		  .kill   ( reset       ),
 		  .enb    ( cntr_enb    ),
-		  .cnt    ( num_count3  )
+		  .cnt    (   )
 	 );
 	 
 	 
@@ -75,7 +83,7 @@ module top
 	     .clk       ( clk                  ),
 		  .kill      ( reset                ),
 		  
-		  .send_byte ( { 4'b0, num_count3 } ),
+		  .send_byte ( { 4'b0, 4'b0 } ),
 		  .send_en   ( send_tx_uart         ),
 		  
 		  .tx_uart   ( tx_uart              )
@@ -94,27 +102,20 @@ module top
 		  .rx_uart      ( rx_uart      ),
 		  .recieve_byte ( rx_uart_byte )
     );		  
-	
-    pll200mhz i_pll200mhz	
-	 (
-	     .inclk0 ( clk        ),
-		  .areset ( reset      ),
-		  
-		  .c0     ( clk_200mhz ),
-		  .locked ( num_count2 )
-	 );
-		  
+			  
+	 
 	 wire [3:0] rx_uart_byte;
 	 
     wire [3:0] num_count0;
     wire [3:0] num_count1;
     wire [3:0] num_count2;
     wire [3:0] num_count3;
-
+    
+	 assign num_count0 = pll_300mhz_locked;
     //assign num_count0 = 4'b11;
-    //assign num_count1 = 4'b00;
-	 //assign num_count2 = 4'b00;
-    // assign num_count3 = 4'b00;
+    assign num_count1 = 4'b00;
+	 assign num_count2 = 4'b00;
+    assign num_count3 = 4'b00;
     //------------------------------------------------------------------------
 
     wire [15:0] number_to_display =
@@ -129,58 +130,28 @@ module top
 
     seven_segment #(.w (16)) i_seven_segment
     (
-        .clk     ( clk                  ),
+        .clk     ( clk_300mhz           ),
         .reset   ( reset                ),
         .num     ( number_to_display    ),
         .abcdefg ( abcdefgh             ),
         .anodes  ( digit                )
     );
 
-	 counter #( .w ( 28 )) cntr_50mhz
-	 ( 
-	  .clk  ( clk       ),
-	  .kill ( reset     ),
-	  
-	  .en   ( 1'b1      ),
-	  .cnt  ( cnt_50mhz )
-	  );
-	  
-	  counter #( .w ( 28 )) cntr_200mhz
-	 ( 
-	  .clk  ( clk_200mhz ),
-	  .kill ( reset      ),
-	  
-	  .en   ( 1'b1       ),
-	  .cnt  ( cnt_200mhz )
-	  );
-	  
-	  wire          clk_200mhz;
-	  
-	  wire [27 : 0] cnt_50mhz;
-	  wire [27 : 0] cnt_200mhz;
-	  
-	  wire led_50_mhz_en;
-	  wire led_200_mhz_en;
-	  
-	  assign led_50_mhz_en  = ( cnt_50mhz ==  27'd200000000 );
-	  assign led_200_mhz_en = ( cnt_200mhz == 27'd200000000 );
-	  
-	  counter #( .w ( 4 )) led_cntr_50mhz
-	 ( 
-	  .clk  ( clk            ),
-	  .kill ( reset          ),
-	  
-	  .en   ( led_50_mhz_en  ),
-	  .cnt  ( num_count0     )
-	  );
-	  
-	  counter #( .w ( 4 )) led_cntr_200mhz
-	 ( 
-	  .clk  ( clk_200mhz     ),
-	  .kill ( reset          ),
-	  
-	  .en   ( led_200_mhz_en ),
-	  .cnt  ( num_count1     )
+	 wire [11 : 0] freq;
+	 (*preserve*) wire signed [11 : 0] cos;
+	 (*preserve*) wire signed [11 : 0] sin;
+	 
+	 assign freq = 12'd14;
+	 
+	 exponent i_exp
+	 (
+	     .clk        ( clk_300mhz ),
+		  .kill       ( reset      ),
+		  
+		  .freq       ( freq       ),
+		  
+		  .exp_out_re ( cos        ),
+		  .exp_out_im ( sin        )
 	  );
 	  
 endmodule

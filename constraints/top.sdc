@@ -1,6 +1,7 @@
 create_clock -name clk_50mhz -period 20ns [get_ports clk]
-create_clock -name clk_200mhz -period 5ns [get_ports clk]
+create_clock -name clk_300mhz -period 3.33ns [get_ports clk_300mhz]
 
+derive_pll_clocks
 derive_clock_uncertainty
 
 set_false_path -from [get_ports {key_sw[*]}] -to [all_clocks]
